@@ -2,3 +2,45 @@ svg {
   width: 100%;
   height: 85vh;
 }
+
+#noteInfoContainer {
+  display: block;
+}
+
+#container {
+  display: flex;
+  border: 1px solid black;
+}
+
+#left,
+#right {
+  /* border: 1px solid red; */
+  flex: 1;
+}
+
+#gridContainer {
+  display: grid;
+  grid-template-columns: 40% 60%;
+}
+
+#displayNote {
+  grid-row: 1 / 4;
+  grid-column: 1;
+  text-align: center;
+}
+
+#homophonic {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+#staff {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+#sound {
+  grid-column: 2;
+  grid-row: 3;
+  width: fit-content;
+}

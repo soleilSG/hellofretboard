@@ -7,10 +7,30 @@
     <title>D3 App</title>
   </head>
   <body>
-    <!-- <h1>Hello D3.js World!</h1> -->
     <svg></svg>
-    <button id="btnShowNotes">Show Notes</button>
-    <button id="btnHideNotes">Hide Notes</button>
+    <div id="container">
+      <div id="left">
+        <div id="gridContainer">
+          <h3 id="displayNote"></h3>
+          <div id='homophonic'>
+            <input type="checkbox" id="homophonicToggle" value="0" />
+            <label for="homophonicToggle">Homophonic</label>
+          </div>
+          <div id='staff'>
+            <input type="checkbox" id="staffToggle" value="0" />
+            <label for="staffToggle">Staff</label>
+          </div>
+          <button id="sound">Sound</button>
+        </div>
+      </div>
+      <div id="right">
+        <!-- <p>Right box</p> -->
+      </div>
+    </div>
+    <div>
+      <button id="btnShowNotes">Show Notes</button>
+      <button id="btnHideNotes">Hide Notes</button>
+    </div>
     <script type="module" src="/main.js"></script>
   </body>
 </html>

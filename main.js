@@ -24,6 +24,9 @@ const y2Scale = scaleLinear()
   .domain([0, 24])
   .range([0, innerHeight]);
 
+/******** Globals ********/
+let selectedNote = null;
+
 
 /******** Functions invocations *************/
 svgBorder();
@@ -31,8 +34,19 @@ createFretBoard();
 
 handleShowNotes();
 handleHideNotes();
+handleHomophonic();
 
 /********* Functions definitions ************/
+function handleHomophonic() {
+  select('#homophonicToggle').on('input', e => {
+    if (e.target.checked) {
+      const noteNum = selectedNote.data.stringNote + 1 + selectedNote.data.index;
+      svg.selectAll('g').selectAll(`.note-${noteNum}`)
+        .attr('stroke', 'blue');
+    }
+  });
+}
+
 function handleShowNotes() {
   select('#btnShowNotes').on('click', () => {
     svg.selectAll('.string')
@@ -53,13 +67,15 @@ function createFretBoard() {
   createFrets();
   const strings = [5, 10, 15, 20, 24, 29];
   createStringsTitles(strings);
-  strings.forEach((e, i) => createString(e + 1, i));
+  strings.forEach((e, i) => createString(e, i));
+  createFretsLabels();
 }
 
 function createStringsTitles(strings) {
   const g = svg.append('g')
     .attr('id', 'stringTitles')
     .attr('transform', `translate(${margin.left}, 0)`);
+
   g.selectAll('text')
     .data(strings)
     .join('text')
@@ -67,6 +83,21 @@ function createStringsTitles(strings) {
     .attr('y', margin.top - 3)
     .attr('text-anchor', 'middle')
     .text(d => numToNote(d));
+}
+
+function createFretsLabels() {
+  const data = [5, 10, 12];
+  const g = svg.append('g')
+    .attr('id', 'fretsLabels')
+    .attr('transform', `translate(${margin.left - 3}, ${margin.top})`);
+
+  g.selectAll('text')
+    .data(data)
+    .join('text')
+    .attr('x', 0)
+    .attr('y', d => yScale(d))
+    .attr('text-anchor', 'end')
+    .text(d => d);
 }
 
 function numToNote(num) {
@@ -80,14 +111,37 @@ function numToNote(num) {
   return scaleNotes.at(noteIndex) + noteGroup;
 }
 
-function handleStringClick(e, d) {
-  console.log(`Note: ${numToNote(d)}`);
-  console.log(e);
-  console.log(d);
-  e.target.attributes['stroke'].value = 'blue';
+function displayNote() {
+  const t = select('#displayNote');
+  if (selectedNote !== null) {
+    const noteNum = selectedNote.data.stringNote + 1 + selectedNote.data.index;
+    t.text(numToNote(noteNum));
+  } else {
+    t.text('');
+  }
 }
 
-function createString(noteNo, stringNo) {
+function handleStringClick(e, d) {
+  // console.log(`Note: ${numToNote(d.stringNote + 1 + d.index)}`);
+  // console.log(e);
+  // console.log(d);
+
+  if (selectedNote !== null) {
+    selectedNote.element.attributes['stroke'].value = 'black';
+    if (selectedNote.data.stringNote === d.stringNote && selectedNote.data.index === d.index) {
+      selectedNote = null;
+      displayNote();
+      return;
+    }
+  }
+  selectedNote = {};
+  selectedNote.element = e.target;
+  selectedNote.element.attributes['stroke'].value = 'blue';
+  selectedNote.data = d;
+  displayNote();
+}
+
+function createString(stringNote, stringNo) {
   const xPos = margin.left + xScale(stringNo);
 
   const stringsGroup = svg.append("g")
@@ -95,10 +149,17 @@ function createString(noteNo, stringNo) {
     .attr('class', 'string')
     .attr("transform", `translate(${xPos}, ${margin.top})`);
 
+  const data = Array.from({ length: 12 }, (_, i) => {
+    let dataItem = {};
+    dataItem.stringNote = stringNote;
+    dataItem.index = i;
+    return dataItem;
+  });
+
   stringsGroup.selectAll('line')
-    .data(Array.from({ length: 12 }, (_, i) => noteNo + i))
+    .data(data)
     .join('line')
-    .attr('class', d => d)
+    .attr('class', d => `note-${d.stringNote + 1 + d.index}`)
     .attr('x1', 0)
     .attr('y1', (_, i) => yScale(i))
     .attr('x2', 0)
@@ -120,7 +181,7 @@ function createString(noteNo, stringNo) {
     .attr('y', d => y2Scale(d))
     .attr('text-anchor', 'middle')
     .attr('display', 'none')
-    .text((_, i) => numToNote(noteNo + i));
+    .text((_, i) => numToNote(stringNote + 1 + i));
 }
 
 function createFrets() {
@@ -137,49 +198,6 @@ function createFrets() {
     .attr('y2', d => yScale(d))
     .attr('stroke', 'black')
     .attr('stroke-width', 2)
-}
-
-
-function createFretBoard1() {
-  const strings = [0, 1, 2, 3, 4, 5];
-  const frets = Array.from({ length: 13 }, (_, i) => i);
-  console.log(frets);
-
-  const stringsChart = svg.append("g")
-    .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-  const fretsChart = svg.append('g')
-    .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-
-  stringsChart.selectAll('line')
-    .data(strings)
-    // .enter().append('line')
-    .join('line')
-    .attr("x1", d => xScale(d))
-    .attr("y1", 0)
-    .attr("x2", d => xScale(d))
-    .attr("y2", innerHeight)
-    .attr("stroke", "black")
-    .attr("stroke-width", 2);
-
-}
-
-function createTable() {
-  const data = Array.from({ length: 12 }, (_, i) => i + 1);
-  const container = select('body').append('table');
-  const rows = container.selectAll('tr')
-    .data(data)
-    .enter()
-    .append('tr');
-
-  const cells = rows.selectAll('td')
-    .data(d => Array.from({ length: 6 }, (_, i) => i + 1))
-    .enter()
-    .append('td');
-
-  cells.text((d, i) => `Row ${rows._groups[0].indexOf(cells._groups[0][i].parentNode) + 1}, Column ${i + 1}`);
-  j
 }
 
 function svgBorder() {
